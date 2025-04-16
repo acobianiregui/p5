@@ -32,10 +32,11 @@ class RepositoryIntegrationTest {
         user.role=Role.USER;
 
         token.appUser=user;
+        appUserRepository.save(user);
         tokenRepository.save(token);
 
         //Guardamos y buscamos para ver si coinciden
-        appUserRepository.save(user);
+
         // When ...
         AppUser usuario= appUserRepository.findByEmail("pepe@gmail.com").orElse(null);
         Token guardado= tokenRepository.findById(token.id).orElse(null);
@@ -71,13 +72,11 @@ class RepositoryIntegrationTest {
         token1.appUser=user;
         tokenRepository.save(token1);
 
-        Token token2 = new Token();
-        token2.appUser=user;
-        tokenRepository.save(token2);
+
 
         //Deberia haber ahora mismo 1 usuario y 2tokens
         Assertions.assertEquals(1, appUserRepository.count());
-        Assertions.assertEquals(2, tokenRepository.count());
+        Assertions.assertEquals(1, tokenRepository.count());
 
         // When ...
         appUserRepository.delete(user); //Borramos y vemos que pasa

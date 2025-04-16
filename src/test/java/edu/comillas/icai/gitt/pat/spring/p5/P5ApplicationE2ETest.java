@@ -15,6 +15,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
@@ -50,15 +53,14 @@ class P5ApplicationE2ETest {
                 "\"role\":\"" + Role.USER + "\"}",
                 response.getBody());
     }
-
     /**
      * TODO#11
      * Completa el siguiente test E2E para que verifique la
      * respuesta de login cuando se proporcionan credenciales correctas
      */
-    @Test public void loginOkTest() {
+    @Test
+    public void loginOkTest() {
         // Given ...
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String registro = "{" +
@@ -68,17 +70,36 @@ class P5ApplicationE2ETest {
                 "\"password\":\"" + PASS + "\"}";
 
         // When ...
-        String login="{\"email\":\"" + EMAIL + "\",\"password\":\"" + PASS + "\"}";
-        ResponseEntity<String> loginResponse = client.exchange(
-                "http://localhost:8080/api/users/login",
-                HttpMethod.POST,
-                new HttpEntity<>(login, headers),
-                String.class);
+        ResponseEntity<String> response = client.exchange(
+                "http://localhost:8080/api/users",
+                HttpMethod.POST, new HttpEntity<>(registro, headers), String.class);
 
         // Then ...
-        //Espero un 200 y respuesta valida
-        Assertions.assertEquals(HttpStatus.OK, loginResponse.getStatusCode());
-        Assertions.assertNotNull(loginResponse.getBody());
-        Assertions.assertTrue(loginResponse.getBody().contains("token"));
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        Assertions.assertEquals("{" +
+                        "\"name\":\"" + NAME + "\"," +
+                        "\"email\":\"" + EMAIL + "\"," +
+                        "\"role\":\"" + Role.USER + "\"}",
+                response.getBody());
+
+        //Ahora hacer el login y comprobar que este bien
+        String login = "{" +
+                "\"email\":\"" + EMAIL + "\"," +
+                "\"password\":\"" + PASS + "\"}";
+
+        ResponseEntity<String> loginResponse = client.exchange(
+                "http://localhost:8080/api/users/me/session",
+                HttpMethod.POST, new HttpEntity<>(login, headers), String.class);
+
+        Assertions.assertEquals(HttpStatus.CREATED, loginResponse.getStatusCode());
+
+
+        // Verificar que devuelve la cookie
+        String sessionCookie = loginResponse.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
+        Assertions.assertNotNull(sessionCookie, "La cookie de sesión debe estar presente.");
+
+        // Verificar si contiene el id
+        Assertions.assertTrue(sessionCookie.contains("session="), "La cookie debe contener 'session='");
     }
+
 }

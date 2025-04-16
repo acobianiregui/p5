@@ -16,7 +16,7 @@ import jakarta.persistence.*;
  */
 
 @Entity
-@Table(name = "APP_USER", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
+
 public class AppUser {
     //Todos son obligatorios asi que no pueden ser nulls
     //Clave id

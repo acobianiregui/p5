@@ -77,8 +77,8 @@ public class UserService implements UserServiceInterface {
         appUser.role= register.role();
         appUser.password= hashing.hash(register.password()); // TODO#14
 
-
-        return profile(appUser); //LLamo a la funcion
+        AppUser guardado=appUserRepository.save(appUser);
+        return profile(guardado); //LLamo a la funcion
     }
 
     public void logout(String tokenId) {
